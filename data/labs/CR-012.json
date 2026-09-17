@@ -1,0 +1,10 @@
+{
+  "case_id": "CR-012",
+  "patient": "Drew Kim (synthetic)",
+  "collected": "2026-10-01",
+  "analytes": [
+    {"name": "hemoglobin", "value": 12.8, "unit": "g/dL"},
+    {"name": "potassium", "value": 4.3, "unit": "mmol/L"},
+    {"name": "TSH", "value": 6.2, "unit": "mIU/L"}
+  ]
+}

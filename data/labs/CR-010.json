@@ -1,0 +1,15 @@
+{
+  "case_id": "CR-010",
+  "patient": "Cameron Walsh (synthetic)",
+  "collected": "2026-09-17",
+  "analytes": [
+    {"name": "HbA1c", "value": 8.1, "unit": "%"},
+    {"name": "creatinine", "value": 1.7, "unit": "mg/dL"},
+    {"name": "eGFR", "value": 38, "unit": "mL/min/1.73m2"},
+    {"name": "potassium", "value": 5.0, "unit": "mmol/L"},
+    {"name": "LDL", "value": 128, "unit": "mg/dL"},
+    {"name": "hemoglobin", "value": 11.4, "unit": "g/dL"},
+    {"name": "sbp", "value": 152, "unit": "mmHg"},
+    {"name": "dbp", "value": 88, "unit": "mmHg"}
+  ]
+}

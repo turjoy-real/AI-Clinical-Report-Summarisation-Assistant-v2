@@ -1,0 +1,110 @@
+[
+  {
+    "case_id": "CR-001",
+    "title": "Type 2 diabetes clinic follow-up",
+    "specialty": "endocrine",
+    "urgency": "routine",
+    "description": "Uncontrolled HbA1c 9.2% on metformin.",
+    "report_path": "reports/CR-001.md",
+    "lab_path": "labs/CR-001.json"
+  },
+  {
+    "case_id": "CR-002",
+    "title": "Severe clinic hypertension",
+    "specialty": "cardio",
+    "urgency": "critical",
+    "description": "BP 178/110 with headache; adherence concerns.",
+    "report_path": "reports/CR-002.md",
+    "lab_path": "labs/CR-002.json"
+  },
+  {
+    "case_id": "CR-003",
+    "title": "Suspected sepsis and pneumonia",
+    "specialty": "infectious_disease",
+    "urgency": "critical",
+    "description": "Fever, hypoxia, lactate 4.2 — urgent path.",
+    "report_path": "reports/CR-003.md",
+    "lab_path": "labs/CR-003.json"
+  },
+  {
+    "case_id": "CR-004",
+    "title": "Iron-deficiency anemia",
+    "specialty": "heme",
+    "urgency": "routine",
+    "description": "Fatigue with Hb 8.1 and low ferritin.",
+    "report_path": "reports/CR-004.md",
+    "lab_path": "labs/CR-004.json"
+  },
+  {
+    "case_id": "CR-005",
+    "title": "Normal annual physical",
+    "specialty": "general",
+    "urgency": "routine",
+    "description": "Negative-control wellness visit with normal labs.",
+    "report_path": "reports/CR-005.md",
+    "lab_path": "labs/CR-005.json"
+  },
+  {
+    "case_id": "CR-006",
+    "title": "HFrEF exacerbation",
+    "specialty": "cardio",
+    "urgency": "routine",
+    "description": "Volume overload and BNP 980.",
+    "report_path": "reports/CR-006.md",
+    "lab_path": "labs/CR-006.json"
+  },
+  {
+    "case_id": "CR-007",
+    "title": "AKI on CKD",
+    "specialty": "renal",
+    "urgency": "routine",
+    "description": "Creatinine rise and eGFR 28 on lisinopril and metformin.",
+    "report_path": "reports/CR-007.md",
+    "lab_path": "labs/CR-007.json"
+  },
+  {
+    "case_id": "CR-008",
+    "title": "Chest pain ACS rule-out",
+    "specialty": "cardio",
+    "urgency": "critical",
+    "description": "Pressure-like pain with troponin 0.18.",
+    "report_path": "reports/CR-008.md",
+    "lab_path": "labs/CR-008.json"
+  },
+  {
+    "case_id": "CR-009",
+    "title": "New hypothyroidism",
+    "specialty": "endocrine",
+    "urgency": "routine",
+    "description": "Fatigue with TSH 18.",
+    "report_path": "reports/CR-009.md",
+    "lab_path": "labs/CR-009.json"
+  },
+  {
+    "case_id": "CR-010",
+    "title": "Multimorbidity DM + HTN + CKD",
+    "specialty": "general",
+    "urgency": "routine",
+    "description": "Combined diabetes, hypertension, and CKD teaching case.",
+    "report_path": "reports/CR-010.md",
+    "lab_path": "labs/CR-010.json"
+  },
+  {
+    "case_id": "CR-011",
+    "title": "Garbled scan (error handling)",
+    "specialty": "general",
+    "urgency": "routine",
+    "description": "Unreadable extract used to demonstrate ingest failure recovery.",
+    "report_path": "reports/CR-011.md",
+    "lab_path": null
+  },
+  {
+    "case_id": "CR-012",
+    "title": "Warfarin–amiodarone–statin list",
+    "specialty": "general",
+    "urgency": "routine",
+    "description": "Medication-heavy note to exercise openFDA interaction lookup.",
+    "report_path": "reports/CR-012.md",
+    "lab_path": "labs/CR-012.json"
+  }
+]

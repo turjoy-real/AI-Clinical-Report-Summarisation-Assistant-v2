@@ -1,0 +1,10 @@
+{
+  "case_id": "CR-005",
+  "specialty": "general",
+  "urgency": "routine",
+  "must_mention": ["normal", "annual"],
+  "lab_flags": [],
+  "guideline_topics": [],
+  "critical": false,
+  "no_critical_flags": true
+}

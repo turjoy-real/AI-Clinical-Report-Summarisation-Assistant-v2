@@ -1,0 +1,14 @@
+{
+  "case_id": "CR-001",
+  "patient": "Jordan Hale (synthetic)",
+  "collected": "2026-03-11",
+  "analytes": [
+    {"name": "HbA1c", "value": 9.2, "unit": "%"},
+    {"name": "glucose", "value": 214, "unit": "mg/dL"},
+    {"name": "LDL", "value": 142, "unit": "mg/dL"},
+    {"name": "HDL", "value": 38, "unit": "mg/dL"},
+    {"name": "creatinine", "value": 0.9, "unit": "mg/dL"},
+    {"name": "eGFR", "value": 86, "unit": "mL/min/1.73m2"},
+    {"name": "potassium", "value": 4.4, "unit": "mmol/L"}
+  ]
+}

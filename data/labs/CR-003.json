@@ -1,0 +1,16 @@
+{
+  "case_id": "CR-003",
+  "patient": "Samira Ortiz (synthetic)",
+  "collected": "2026-01-19",
+  "analytes": [
+    {"name": "WBC", "value": 18.4, "unit": "x10^9/L"},
+    {"name": "lactate", "value": 4.2, "unit": "mmol/L"},
+    {"name": "creatinine", "value": 1.8, "unit": "mg/dL"},
+    {"name": "glucose", "value": 262, "unit": "mg/dL"},
+    {"name": "temperature", "value": 39.2, "unit": "C"},
+    {"name": "heart_rate", "value": 124, "unit": "bpm"},
+    {"name": "resp_rate", "value": 32, "unit": "/min"},
+    {"name": "sbp", "value": 88, "unit": "mmHg"},
+    {"name": "dbp", "value": 54, "unit": "mmHg"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "CR-007",
+  "patient": "Taylor Brooks (synthetic)",
+  "collected": "2026-07-08",
+  "analytes": [
+    {"name": "creatinine", "value": 2.6, "unit": "mg/dL"},
+    {"name": "eGFR", "value": 28, "unit": "mL/min/1.73m2"},
+    {"name": "BUN", "value": 42, "unit": "mg/dL"},
+    {"name": "potassium", "value": 5.3, "unit": "mmol/L"},
+    {"name": "glucose", "value": 146, "unit": "mg/dL"}
+  ]
+}

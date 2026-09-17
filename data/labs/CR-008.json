@@ -1,0 +1,13 @@
+{
+  "case_id": "CR-008",
+  "patient": "Quinn Alvarez (synthetic)",
+  "collected": "2026-08-11",
+  "analytes": [
+    {"name": "troponin", "value": 0.18, "unit": "ng/mL"},
+    {"name": "potassium", "value": 4.1, "unit": "mmol/L"},
+    {"name": "creatinine", "value": 1.0, "unit": "mg/dL"},
+    {"name": "heart_rate", "value": 102, "unit": "bpm"},
+    {"name": "sbp", "value": 148, "unit": "mmHg"},
+    {"name": "dbp", "value": 90, "unit": "mmHg"}
+  ]
+}

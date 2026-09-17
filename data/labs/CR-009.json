@@ -1,0 +1,11 @@
+{
+  "case_id": "CR-009",
+  "patient": "Harper Singh (synthetic)",
+  "collected": "2026-09-03",
+  "analytes": [
+    {"name": "TSH", "value": 18, "unit": "mIU/L"},
+    {"name": "hemoglobin", "value": 13.1, "unit": "g/dL"},
+    {"name": "sodium", "value": 138, "unit": "mmol/L"},
+    {"name": "heart_rate", "value": 58, "unit": "bpm"}
+  ]
+}

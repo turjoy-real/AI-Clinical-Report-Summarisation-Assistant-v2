@@ -1,0 +1,13 @@
+{
+  "case_id": "CR-006",
+  "patient": "Chris Patel (synthetic)",
+  "collected": "2026-06-22",
+  "analytes": [
+    {"name": "BNP", "value": 980, "unit": "pg/mL"},
+    {"name": "sodium", "value": 134, "unit": "mmol/L"},
+    {"name": "potassium", "value": 3.9, "unit": "mmol/L"},
+    {"name": "creatinine", "value": 1.2, "unit": "mg/dL"},
+    {"name": "eGFR", "value": 62, "unit": "mL/min/1.73m2"},
+    {"name": "resp_rate", "value": 22, "unit": "/min"}
+  ]
+}

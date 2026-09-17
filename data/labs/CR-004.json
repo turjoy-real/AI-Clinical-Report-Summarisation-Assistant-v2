@@ -1,0 +1,10 @@
+{
+  "case_id": "CR-004",
+  "patient": "Morgan Ellis (synthetic)",
+  "collected": "2026-02-07",
+  "analytes": [
+    {"name": "hemoglobin", "value": 8.1, "unit": "g/dL"},
+    {"name": "ferritin", "value": 9, "unit": "ng/mL"},
+    {"name": "TSH", "value": 2.1, "unit": "mIU/L"}
+  ]
+}

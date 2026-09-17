@@ -1,0 +1,9 @@
+{
+  "case_id": "CR-001",
+  "specialty": "endocrine",
+  "urgency": "routine",
+  "must_mention": ["diabetes", "9.2"],
+  "lab_flags": ["hba1c"],
+  "guideline_topics": ["diabetes"],
+  "critical": false
+}

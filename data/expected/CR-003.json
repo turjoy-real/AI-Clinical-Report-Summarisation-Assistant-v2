@@ -1,0 +1,9 @@
+{
+  "case_id": "CR-003",
+  "specialty": "infectious_disease",
+  "urgency": "critical",
+  "must_mention": ["sepsis", "lactate"],
+  "lab_flags": ["lactate"],
+  "guideline_topics": ["sepsis"],
+  "critical": true
+}

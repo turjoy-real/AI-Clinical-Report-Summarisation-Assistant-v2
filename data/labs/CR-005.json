@@ -1,0 +1,17 @@
+{
+  "case_id": "CR-005",
+  "patient": "Riley Nguyen (synthetic)",
+  "collected": "2026-05-14",
+  "analytes": [
+    {"name": "HbA1c", "value": 5.4, "unit": "%"},
+    {"name": "glucose", "value": 88, "unit": "mg/dL"},
+    {"name": "hemoglobin", "value": 14.2, "unit": "g/dL"},
+    {"name": "potassium", "value": 4.2, "unit": "mmol/L"},
+    {"name": "sodium", "value": 140, "unit": "mmol/L"},
+    {"name": "creatinine", "value": 0.8, "unit": "mg/dL"},
+    {"name": "eGFR", "value": 102, "unit": "mL/min/1.73m2"},
+    {"name": "TSH", "value": 1.8, "unit": "mIU/L"},
+    {"name": "LDL", "value": 96, "unit": "mg/dL"},
+    {"name": "HDL", "value": 54, "unit": "mg/dL"}
+  ]
+}
