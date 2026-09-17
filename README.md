@@ -50,3 +50,5 @@ This repository is primarily Python-based, with the following language distribut
 - Other: 1.1%
 
 The project is centered on the Python backend and agent orchestration layer, while the frontend and supporting UI are kept to a smaller TypeScript footprint.
+
+This project demonstrates how AI can be applied in a healthcare workflow by combining multi-agent reasoning, retrieval-augmented guidance, and human-in-the-loop review to transform a raw clinical report into a structured summary with evidence-backed recommendations while keeping the output transparent and safe for educational use.
