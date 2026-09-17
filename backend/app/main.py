@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes import router
 from app.config import get_settings
 
 settings = get_settings()
@@ -21,14 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/health")
-def health() -> dict[str, object]:
-    return {
-        "status": "ok",
-        "disclaimer": "Educational prototype. Not for clinical use.",
-        "mock_llm": True if settings.mock_llm else False,
-    }
+app.include_router(router)
 
 
 @app.get("/")

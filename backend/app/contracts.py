@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -81,3 +81,59 @@ class ReviewRequest(BaseModel):
     decision: Literal["approve", "edit", "reject"]
     edits: str = ""
     feedback: str = ""
+
+
+# --- Run persistence (Adarsh) -------------------------------------------------
+
+
+class RunEvent(BaseModel):
+    """One agent timeline event; shape matches graph/state.py append_event."""
+
+    timestamp: str = ""
+    agent: str
+    decision: str
+    latency_ms: int = 0
+    tokens: int = 0
+    model: str = "mock"
+    tool_calls: list[str] = Field(default_factory=list)
+    error: str | None = None
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+    timestamp: str = ""
+
+
+class HumanDecision(BaseModel):
+    """Last clinician decision recorded on a run."""
+
+    decision: Literal["pending", "approve", "edit", "reject"] = "pending"
+    edits: str = ""
+    feedback: str = ""
+    decided_at: str | None = None
+
+
+class RunRecord(BaseModel):
+    run_id: str
+    case_id: str | None = None
+    status: str = "running"
+    disclaimer: str = "Educational prototype. Not for clinical use."
+    summary: str = ""
+    recommendations: list[Recommendation] = Field(default_factory=list)
+    lab_flags: list[dict[str, Any]] = Field(default_factory=list)
+    retrieved_docs: list[dict[str, Any]] = Field(default_factory=list)
+    safety_flags: list[str] = Field(default_factory=list)
+    citations: list[dict[str, Any]] = Field(default_factory=list)
+    analysis: dict[str, Any] = Field(default_factory=dict)
+    events: list[RunEvent] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)
+    chat_history: list[ChatMessage] = Field(default_factory=list)
+    human_decision: HumanDecision = Field(default_factory=HumanDecision)
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=4000)

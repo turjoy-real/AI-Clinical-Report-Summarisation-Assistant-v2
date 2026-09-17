@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     chroma_dir: Path = ROOT / "data" / "chroma"
     checkpoint_dir: Path = BACKEND_ROOT / ".checkpoints"
     log_dir: Path = BACKEND_ROOT / ".runs"
+    runs_dir: Path = BACKEND_ROOT / ".runs" / "records"
     frontend_origin: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(
