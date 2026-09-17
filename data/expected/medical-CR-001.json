@@ -1,0 +1,68 @@
+﻿{
+  "MEDICAL": {
+    "chief_concern": "Review of type 2 diabetes after home glucose readings in the 200s.",
+    "problems": [
+      "type 2 diabetes",
+      "obesity",
+      "hyperlipidemia"
+    ],
+    "medications": [
+      "metformin"
+    ],
+    "allergies": [],
+    "vitals": {
+      "BP": "138/84",
+      "HR": "78",
+      "RR": "16",
+      "temperature": "36.7",
+      "BMI": "32.4"
+    },
+    "labs": [
+      {
+        "analyte": "HbA1c",
+        "value": "9.2",
+        "unit": "%",
+        "flag": "high"
+      },
+      {
+        "analyte": "fasting glucose",
+        "value": "214",
+        "unit": "mg/dL",
+        "flag": "high"
+      },
+      {
+        "analyte": "LDL",
+        "value": "142",
+        "unit": "mg/dL",
+        "flag": "high"
+      },
+      {
+        "analyte": "HDL",
+        "value": "38",
+        "unit": "mg/dL",
+        "flag": "low"
+      },
+      {
+        "analyte": "creatinine",
+        "value": "0.9",
+        "unit": "mg/dL",
+        "flag": "normal"
+      },
+      {
+        "analyte": "eGFR",
+        "value": "86",
+        "unit": "",
+        "flag": "normal"
+      },
+      {
+        "analyte": "potassium",
+        "value": "4.4",
+        "unit": "mmol/L",
+        "flag": "normal"
+      }
+    ],
+    "assessment": "Uncontrolled type 2 diabetes with HbA1c 9.2 % on metformin monotherapy. Hyperlipidemia not at teaching target.",
+    "plan": "Counsel on adherence and nutrition. Clinician to consider therapy intensification at this visit. Repeat HbA1c in 3 months. Continue statin discussion. Eye and foot screening due.",
+    "missing_sections": []
+  }
+}
