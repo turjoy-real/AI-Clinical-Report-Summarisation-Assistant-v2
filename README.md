@@ -1,6 +1,6 @@
 # AI Clinical Report Summarisation Assistant
 
-Educational multi-agent prototype for the UST Enterprise Capstone (Healthcare). A clinician uploads a **synthetic** report. LangGraph agents extract findings, retrieve educational guidelines, draft a summary, then **pause for human approval** before anything is released.
+Educational multi-agent prototype for the UST Enterprise Capstone (Healthcare). A clinician uploads a **synthetic** report. LangGraph agents extract findings, retrieve educational guidelines, draft a structured summary, and present a clinician-facing review workflow.
 
 **Not for clinical use.** All patients, labs, and recommendations are synthetic.
 
@@ -39,3 +39,14 @@ After this bootstrap, Phase 1 can start **in parallel**:
 Then **Vamsi** (`team/03-vamsi.md`) after Siva's chunks exist.
 
 See `team/README.md` and `team/CONTRACTS.md`.
+
+## Repository composition
+
+This repository is primarily Python-based, with the following language distribution:
+
+- Python: 93.6%
+- TypeScript: 4.0%
+- HTML: 1.3%
+- Other: 1.1%
+
+The project is centered on the Python backend and agent orchestration layer, while the frontend and supporting UI are kept to a smaller TypeScript footprint.
