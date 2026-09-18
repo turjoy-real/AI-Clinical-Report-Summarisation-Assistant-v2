@@ -7,6 +7,7 @@ import type {
   HealthInfo,
   Metrics,
   ReviewPayload,
+  RunEvent,
   RunRecord,
   StartRunResponse,
 } from "./types";

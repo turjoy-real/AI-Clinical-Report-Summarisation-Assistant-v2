@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from backend.app.rag.ingest import ingest_guideline_corpus, list_guideline_chunks
+from app.rag.ingest import ingest_guideline_corpus, list_guideline_chunks
 
 
 def test_ingest_and_list():
