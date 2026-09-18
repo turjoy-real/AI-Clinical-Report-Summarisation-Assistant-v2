@@ -1,10 +1,8 @@
 # AI Clinical Report Summarisation Assistant
 
-Educational multi-agent prototype for the UST Enterprise Capstone (Healthcare). A clinician uploads a **synthetic** report. LangGraph agents extract findings, retrieve educational guidelines, draft a structured summary, and present a clinician-facing review workflow.
+Educational multi-agent prototype for the UST Enterprise Capstone (Healthcare). A clinician uploads a **synthetic** report. LangGraph agents extract findings, retrieve educational guidelines, draft a SOAP summary, then **pause for human approval** before anything is released.
 
-**Not for clinical use.** All patients, labs, and recommendations are synthetic.
-
-Phase 0 (Turjoy T0–T4) is in this repo: contracts, synthetic case library, LLM fallback, LangGraph skeleton, and teammate function stubs.
+**Not for clinical use.** All patients, labs, and recommendations are synthetic. The UI banner, API, and generated text repeat that disclaimer.
 
 ## Quick start
 
@@ -14,6 +12,7 @@ python3 -m venv ../.venv
 source ../.venv/bin/activate
 pip install -r requirements.txt
 cp ../.env.example ../.env
+python ../scripts/ingest_rag.py
 uvicorn app.main:app --port 8000
 ```
 
@@ -25,42 +24,74 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173). Health: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health).
 
-**Ports:** backend `8000` (FastAPI/uvicorn), frontend `5173` (Vite dev server, proxies `/api` to `127.0.0.1:8000`). For the UI tests: `cd frontend && npm test` (Vitest + RTL).
+**Ports:** backend `8000` (FastAPI/uvicorn), frontend `5173` (Vite proxies `/api` to `127.0.0.1:8000`).
 
-## App map (Adarsh — API + UI + run store)
+`MOCK_LLM=true` (default) completes the full path with no API keys.
 
-- `backend/app/api/routes.py` — all HTTP routes (health, cases, runs, SSE events, review, chat, metrics, RAG reindex)
-- `backend/app/memory/store.py` — run persistence: JSON records under `backend/.runs/records/` + in-memory index
-- `frontend/src/api.ts` — typed wrappers for every backend route + duplicate-safe SSE subscription
-- Pages: `/` case library · `/workspace/:runId` workspace · `/observability` metrics table
-- HITL flow: run reaches `awaiting_review` → `HitlDrawer` enables **Approve / Save edits / Reject** → decision persists in the run record (browser refresh restores it; no second run is created)
-- Chat is enabled only after `finalized`; `ingest_failed` asks the clinician to paste text instead
-- Persistent banner on every page: **Educational prototype. Not for clinical use.**
+Docker:
 
-## Who builds next
+```bash
+cp .env.example .env
+docker compose up --build
+```
 
-After this bootstrap, Phase 1 can start **in parallel**:
+## Manual demo script
 
-| Person | File | Public function |
-| --- | --- | --- |
-| **Siva** | `team/02-siva.md` | `ingest_guideline_corpus` / `list_guideline_chunks` |
-| **Radhakrishna** | `team/04-radhakrishna.md` | `extract_patient_data` |
-| **Vinayak** | `team/05-vinayak.md` | `extract_medical_data` |
-| **Adarsh** | `team/01-adarsh.md` | FastAPI + UI shell + run store |
+1. **Library → CR-001.** Timeline shows `fanout` then analysis, labs, and RAG. Approve the draft.
+2. **Follow-up:** `what was the A1c?` — answer comes from case memory (`9.2`), not a new ingest.
+3. **CR-003.** Router takes `critical` / infectious disease; safety flags fire; HITL cannot be skipped.
+4. **Observability.** Show model path (`mock` / `openai` / `gemini`), latency, HITL mix.
+5. **CR-011.** Ingest fails closed and asks the clinician to paste text.
 
-Then **Vamsi** (`team/03-vamsi.md`) after Siva's chunks exist.
+## Who owns what
 
-See `team/README.md` and `team/CONTRACTS.md`.
+| Person | Public function / surface |
+| --- | --- |
+| **Turjoy** | LangGraph + HITL interrupt, LLM fallback, safety, chat, metrics, Docker |
+| **Adarsh** | FastAPI, run store, React UI, HITL drawer, SSE |
+| **Siva** | `ingest_guideline_corpus` / `list_guideline_chunks` |
+| **Vamsi** | `embed_guidelines` / `retrieve_guidelines` |
+| **Radhakrishna** | `extract_patient_data` |
+| **Vinayak** | `extract_medical_data` |
+| **Sneha** | `create_indepth_summary` |
+| **Lakshmi** | `create_recommendations` |
 
-## Repository composition
+Contracts: `team/CONTRACTS.md`.
 
-This repository is primarily Python-based, with the following language distribution:
+## Architecture
 
-- Python: 93.6%
-- TypeScript: 4.0%
-- HTML: 1.3%
-- Other: 1.1%
+```
+Upload / case library
+        │
+        ▼
+   Ingest  ──unreadable──► END (paste the note as text)
+        │
+        ▼
+   Router ──critical──► Urgent safety gate
+        │                            │
+        └──routine───────────────────┤
+                                     ▼
+                              Parallel fan-out
+                     ┌───────────────┼───────────────┐
+                     ▼               ▼               ▼
+               Analysis           Labs            Guideline RAG
+                     └───────────────┼───────────────┘
+                                     ▼
+                          Sneha summary → Lakshmi recs → Safety
+                                     │
+                                     ▼
+                          HITL interrupt (required)
+                          Approve / Edit ──► Finalize ──► Follow-up Q&A
+                          Reject ──► Revise ──► Safety ──► HITL again
+```
 
-The project is centered on the Python backend and agent orchestration layer, while the frontend and supporting UI are kept to a smaller TypeScript footprint.
+LLM path: **OpenAI → Gemini → mock**. HITL uses LangGraph `interrupt_before=["hitl_review"]`.
 
-This project demonstrates how AI can be applied in a healthcare workflow by combining multi-agent reasoning, retrieval-augmented guidance, and human-in-the-loop review to transform a raw clinical report into a structured summary with evidence-backed recommendations while keeping the output transparent and safe for educational use.
+## Tests
+
+```bash
+cd backend && python -m pytest
+cd frontend && npm test
+```
+
+Default CI is mock-only (`MOCK_LLM=true`). Do not add live-LLM tests to the default suite.

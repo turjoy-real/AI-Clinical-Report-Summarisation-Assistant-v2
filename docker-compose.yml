@@ -1,4 +1,3 @@
-# Stub — Turjoy T12 will finish images and env wiring.
 services:
   backend:
     build:
@@ -10,9 +9,15 @@ services:
       - .env
     environment:
       DATA_DIR: /app/data
+      CHROMA_DIR: /app/data/chroma
+      CHECKPOINT_DIR: /app/backend/.checkpoints
+      LOG_DIR: /app/backend/.runs
       FRONTEND_ORIGIN: http://localhost:5173
+      MOCK_LLM: "true"
     volumes:
       - ./data:/app/data
+      - ./backend/.runs:/app/backend/.runs
+      - ./backend/.checkpoints:/app/backend/.checkpoints
 
   frontend:
     build:

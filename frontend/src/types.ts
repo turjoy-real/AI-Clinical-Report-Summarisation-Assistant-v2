@@ -102,6 +102,10 @@ export interface Metrics {
   llm_fallbacks: number;
   agent_latency_ms_avg: number;
   tokens_total: number;
+  hitl_mix?: Record<string, number>;
+  models?: Record<string, number>;
+  model_path?: Record<string, number>;
+  agent_latency?: Record<string, { count: number; avg_ms: number; p50_ms: number; p95_ms: number; max_ms?: number }>;
 }
 
 export interface ReviewPayload {

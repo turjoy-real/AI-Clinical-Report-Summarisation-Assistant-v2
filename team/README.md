@@ -90,10 +90,10 @@ Vamsi does **not** write guideline markdown. Siva does **not** implement `retrie
 
 ## Merge checklist (demo day)
 
-- [ ] `MOCK_LLM=true` full path works with no API keys
-- [ ] CR-001: Sneha's summary mentions diabetes and 9.2; Vamsi's RAG topic is diabetes
-- [ ] Lakshmi's recommendations each have a citation from retrieved docs
-- [ ] CR-003 (sepsis-style): HITL cannot be skipped
-- [ ] Unreadable PDF: ingest fails closed, UI asks for pasted text
-- [ ] Approve / Edit / Reject all persist on refresh
-- [ ] Banner: Not for clinical use
+- [x] `MOCK_LLM=true` full path works with no API keys
+- [x] CR-001: Sneha's summary mentions diabetes and 9.2; Vamsi's RAG topic is diabetes
+- [x] Lakshmi's recommendations each have a citation from retrieved docs
+- [x] CR-003 (sepsis-style): HITL cannot be skipped
+- [x] Unreadable PDF: ingest fails closed, UI asks for pasted text
+- [x] Approve / Edit / Reject all persist on refresh
+- [x] Banner: Not for clinical use
