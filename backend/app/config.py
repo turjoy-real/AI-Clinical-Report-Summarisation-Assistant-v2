@@ -46,10 +46,23 @@ class Settings(BaseSettings):
         return (not self.mock_llm) and (self.has_openai or self.has_gemini)
 
 
+def _resolve_path(value: Path, base: Path) -> Path:
+    if value.is_absolute():
+        return value
+    return (base / value).resolve()
+
+
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
+    # .env paths are written for a backend working directory (DATA_DIR=../data).
+    settings.data_dir = _resolve_path(settings.data_dir, BACKEND_ROOT)
+    settings.chroma_dir = _resolve_path(settings.chroma_dir, BACKEND_ROOT)
+    settings.checkpoint_dir = _resolve_path(settings.checkpoint_dir, BACKEND_ROOT)
+    settings.log_dir = _resolve_path(settings.log_dir, BACKEND_ROOT)
+    settings.runs_dir = _resolve_path(settings.runs_dir, BACKEND_ROOT)
     settings.checkpoint_dir.mkdir(parents=True, exist_ok=True)
     settings.log_dir.mkdir(parents=True, exist_ok=True)
     settings.chroma_dir.mkdir(parents=True, exist_ok=True)
+    settings.runs_dir.mkdir(parents=True, exist_ok=True)
     return settings

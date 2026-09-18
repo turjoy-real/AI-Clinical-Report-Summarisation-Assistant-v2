@@ -407,31 +407,22 @@ async def chat_run(run_id: str, request: ChatRequest) -> dict[str, Any]:
         raise HTTPException(status_code=409, detail="Available after approval")
 
     store.append_chat(run_id, ChatMessage(role="user", content=request.message, timestamp=utcnow()))
-    answer = _mock_chat_answer(request.message, record.summary)
+    from app.graph.qa import answer_followup
 
-    try:
-        from app.llm.provider import complete_text
-
-        result = complete_text(
-            system="You are an educational assistant. Always note: Educational prototype. Not for clinical use.",
-            user=f"Draft:\n{record.summary}\n\nQuestion: {request.message}",
-            mock=answer,
-        )
-        answer = result.text
-    except Exception:  # noqa: BLE001 — keep the mock answer if the provider layer changes
-        pass
+    analysis = record.analysis or {}
+    answer = answer_followup(
+        request.message,
+        {
+            "extracted_text": analysis.get("extracted_text") or record.summary,
+            "analysis": analysis,
+            "summary": record.summary,
+            "lab_flags": [flag if isinstance(flag, dict) else flag.model_dump() for flag in record.lab_flags],
+        },
+    )
 
     store.append_chat(run_id, ChatMessage(role="assistant", content=answer, timestamp=utcnow()))
     refreshed = store.get_run(run_id)
     return {"reply": answer, "chat_history": [m.model_dump() for m in (refreshed.chat_history if refreshed else [])]}
-
-
-def _mock_chat_answer(question: str, summary: str) -> str:
-    snippet = (summary or "").strip().replace("\n", " ")[:220]
-    return (
-        f"Teaching answer (mock path): regarding “{(question or '').strip()}”, the approved draft notes: {snippet} "
-        "Educational prototype. Not for clinical use."
-    )
 
 
 # Metrics + RAG ----------------------------------------------------------------
@@ -439,17 +430,20 @@ def _mock_chat_answer(question: str, summary: str) -> str:
 
 @router.get("/metrics")
 def get_metrics() -> dict[str, Any]:
-    """Stub zeros until Turjoy fills it."""
+    snap = metrics.snapshot()
     runs = store.list_runs()
-    return {
-        "runs_total": len(runs),
-        "runs_finalized": sum(1 for r in runs if r.status == "finalized"),
-        "hitl_approvals": sum(1 for r in runs if (r.human_decision.decision or "pending") == "approve"),
-        "hitl_rejections": sum(1 for r in runs if (r.human_decision.decision or "pending") == "reject"),
-        "llm_fallbacks": metrics.fallbacks,
-        "agent_latency_ms_avg": 0,
-        "tokens_total": 0,
+    hitl_from_store = {
+        "approve": sum(1 for r in runs if (r.human_decision.decision or "pending") == "approve"),
+        "edit": sum(1 for r in runs if (r.human_decision.decision or "pending") == "edit"),
+        "reject": sum(1 for r in runs if (r.human_decision.decision or "pending") == "reject"),
     }
+    snap["runs_total"] = max(int(snap.get("runs_total") or 0), len(runs))
+    snap["runs_finalized"] = sum(1 for r in runs if r.status == "finalized")
+    if not snap.get("hitl_approvals"):
+        snap["hitl_approvals"] = hitl_from_store["approve"]
+        snap["hitl_rejections"] = hitl_from_store["reject"]
+        snap["hitl_mix"] = {**hitl_from_store, **(snap.get("hitl_mix") or {})}
+    return snap
 
 
 @router.post("/rag/reindex")

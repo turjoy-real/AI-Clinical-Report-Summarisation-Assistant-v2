@@ -198,7 +198,7 @@ def _finalize(
 
 
 def _load_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def _load_patient(raw: Any) -> PatientData:
