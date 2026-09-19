@@ -154,7 +154,7 @@ Default suite is mock-only. Do not add live-LLM tests to CI.
 | **Sneha** | `create_indepth_summary` |
 | **Lakshmi** | `create_recommendations` |
 
-Contracts: `team/CONTRACTS.md`.
+Contracts: `backend/app/contracts.py`.
 
 ## Architecture
 

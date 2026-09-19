@@ -19,3 +19,4 @@ frontend/coverage/
 .idea/
 .vscode/
 *.log
+team/
