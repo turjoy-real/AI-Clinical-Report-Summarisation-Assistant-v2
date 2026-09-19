@@ -104,7 +104,11 @@ def update_run(run_id: str, **fields: Any) -> RunRecord | None:
         return updated.model_copy(deep=True)
 
 
-def append_events(run_id: str, events: list[RunEvent]) -> RunRecord | None:
+def _as_event(event: RunEvent | dict[str, Any]) -> RunEvent:
+    return event if isinstance(event, RunEvent) else RunEvent.model_validate(event)
+
+
+def append_events(run_id: str, events: list[RunEvent] | list[dict[str, Any]]) -> RunRecord | None:
     """Merge events that are not already stored (keyed on timestamp+agent+decision)."""
     if not events:
         return get_run(run_id)
@@ -112,8 +116,9 @@ def append_events(run_id: str, events: list[RunEvent]) -> RunRecord | None:
         current = _INDEX.get(run_id)
         if current is None:
             return None
+        incoming = [_as_event(event) for event in events]
         existing = {(e.timestamp, e.agent, e.decision) for e in current.events}
-        fresh = [e for e in events if (e.timestamp, e.agent, e.decision) not in existing]
+        fresh = [e for e in incoming if (e.timestamp, e.agent, e.decision) not in existing]
         if not fresh:
             return current.model_copy(deep=True)
         return update_run(run_id, events=[*(e.model_dump() for e in current.events), *(e.model_dump() for e in fresh)])

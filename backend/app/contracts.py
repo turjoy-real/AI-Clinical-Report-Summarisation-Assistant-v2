@@ -121,6 +121,10 @@ class RunRecord(BaseModel):
     status: str = "running"
     disclaimer: str = "Educational prototype. Not for clinical use."
     summary: str = ""
+    extracted_text: str = ""
+    specialty: str | None = None
+    urgency: str | None = None
+    source: str = "upload"
     recommendations: list[Recommendation] = Field(default_factory=list)
     lab_flags: list[dict[str, Any]] = Field(default_factory=list)
     retrieved_docs: list[dict[str, Any]] = Field(default_factory=list)

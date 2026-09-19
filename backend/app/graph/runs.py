@@ -70,10 +70,16 @@ def _persist_to_store(run_id: str, values: dict[str, Any]) -> None:
     analysis = dict(values.get("analysis") or {})
     if values.get("extracted_text") and "extracted_text" not in analysis:
         analysis["extracted_text"] = values.get("extracted_text")
+    record = store.get_run(run_id)
+    source = "library" if (record and record.case_id) or values.get("case_id") else "upload"
     store.update_run(
         run_id,
         status=values.get("status") or "running",
         summary=values.get("summary") or "",
+        extracted_text=values.get("extracted_text") or analysis.get("extracted_text") or "",
+        specialty=values.get("specialty"),
+        urgency=values.get("urgency"),
+        source=source,
         recommendations=values.get("recommendations") or [],
         citations=values.get("citations") or [],
         lab_flags=values.get("lab_flags") or [],

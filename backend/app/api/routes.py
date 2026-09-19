@@ -275,6 +275,7 @@ async def create_run(
         run_id=store.new_run_id(),
         case_id=case_id,
         status="running",
+        source="library" if case_id else "upload",
         created_at=now,
         updated_at=now,
         events=[RunEvent(timestamp=now, agent="ingest", decision="run_created").model_dump()],
@@ -308,13 +309,30 @@ async def create_run(
 
 @router.get("/runs")
 def list_runs() -> list[dict[str, Any]]:
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+
+    def _age_seconds(stamp: str) -> int | None:
+        if not stamp:
+            return None
+        try:
+            parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        return max(0, int((now - parsed).total_seconds()))
+
     return [
         {
             "run_id": r.run_id,
             "case_id": r.case_id,
             "status": r.status,
+            "urgency": r.urgency or (r.analysis or {}).get("urgency"),
+            "specialty": r.specialty or (r.analysis or {}).get("specialty"),
+            "source": r.source or ("library" if r.case_id else "upload"),
             "created_at": r.created_at,
             "updated_at": r.updated_at,
+            "age_seconds": _age_seconds(r.created_at or r.updated_at),
         }
         for r in store.list_runs()
     ]
@@ -379,8 +397,14 @@ async def review_run(run_id: str, request: ReviewRequest) -> dict[str, Any]:
     )
     store.append_events(
         run_id,
-        [RunEvent(timestamp=decided_at, agent="clinician", decision=request.decision,
-                  payload={"edits": request.edits, "feedback": request.feedback}).model_dump()],
+        [
+            RunEvent(
+                timestamp=decided_at,
+                agent="clinician",
+                decision=request.decision,
+                payload={"edits": request.edits, "feedback": request.feedback},
+            )
+        ],
     )
 
     resumer = _graph_resumer()
