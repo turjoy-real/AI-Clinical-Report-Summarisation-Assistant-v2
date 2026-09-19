@@ -128,9 +128,25 @@ def start_run(
     _ensure_record(run_id, case_id)
     graph = get_graph()
     config = {"configurable": {"thread_id": run_id}}
-    graph.invoke(_initial_state(run_id, text, case_id, filename), config)
+    last_values: dict[str, Any] = {}
+    try:
+        for values in graph.stream(
+            _initial_state(run_id, text, case_id, filename),
+            config,
+            stream_mode="values",
+        ):
+            last_values = dict(values or {})
+            _persist_to_store(run_id, last_values)
+    except Exception as exc:
+        failed = {
+            **last_values,
+            "status": "ingest_failed",
+            "errors": list(last_values.get("errors") or []) + [str(exc)],
+        }
+        _persist_to_store(run_id, failed)
+        raise
     snapshot = graph.get_state(config)
-    values = dict(snapshot.values or {})
+    values = dict(snapshot.values or last_values)
     if snapshot.next == ("hitl_review",):
         values["status"] = "awaiting_review"
     _persist_to_store(run_id, values)

@@ -29,7 +29,7 @@ def _openai_complete(system: str, user: str) -> LLMResult:
         raise ProviderError("OpenAI key missing")
     from openai import OpenAI
 
-    client = OpenAI(api_key=settings.openai_api_key)
+    client = OpenAI(api_key=settings.openai_api_key, timeout=20.0)
     response = client.chat.completions.create(
         model=settings.openai_model,
         temperature=0.1,
@@ -51,7 +51,7 @@ def _gemini_complete(system: str, user: str) -> LLMResult:
 
     genai.configure(api_key=settings.gemini_api_key)
     model = genai.GenerativeModel(settings.gemini_model, system_instruction=system)
-    response = model.generate_content(user)
+    response = model.generate_content(user, request_options={"timeout": 20})
     text = response.text or ""
     return LLMResult(text=text, model=settings.gemini_model, tokens=0, provider="gemini")
 

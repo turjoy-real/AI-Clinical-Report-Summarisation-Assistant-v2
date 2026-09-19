@@ -75,6 +75,7 @@ def _build_langchain_llm() -> Any:
             model=settings.gemini_model,
             google_api_key=settings.gemini_api_key,
             temperature=LLM_TEMPERATURE,
+            timeout=20,
         )
     if settings.has_openai:
         from langchain_openai import ChatOpenAI

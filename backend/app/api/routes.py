@@ -291,15 +291,16 @@ async def create_run(
 
     runner = _graph_runner()
     if runner is not None:
-        try:
-            result = _sync(runner(run_id=record.run_id, case_id=case_id, text=pasted, filename=filename))
-            if isinstance(result, dict) and result.get("run_id"):
-                return result
-            if isinstance(result, str):
-                return {"run_id": result, "status": store.get_run(result).status if store.get_run(result) else "running"}
-        except Exception as exc:  # noqa: BLE001 — graph may not accept this signature yet
-            store.update_run(record.run_id, status="ingest_failed", errors=[str(exc)])
-            raise HTTPException(status_code=500, detail=f"start_run failed: {exc}") from exc
+        # Live Gemini/OpenAI calls can take tens of seconds. Run the graph off the
+        # event loop so POST /runs returns immediately and health/SSE stay alive.
+        def _drive() -> None:
+            try:
+                _sync(runner(run_id=record.run_id, case_id=case_id, text=pasted, filename=filename))
+            except Exception as exc:  # noqa: BLE001 — persist failure; workspace polls status
+                store.update_run(record.run_id, status="ingest_failed", errors=[str(exc)])
+
+        asyncio.get_running_loop().run_in_executor(None, _drive)
+        return {"run_id": record.run_id, "status": "running"}
 
     # Fallback: drive the record so the UI can be developed before Phase 4.
     _start_mock_run(record, pasted)

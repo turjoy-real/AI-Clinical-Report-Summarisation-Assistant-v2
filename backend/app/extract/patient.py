@@ -21,8 +21,12 @@ def _extract_with_gemini(document_text: str) -> PatientData:
     settings = get_settings()
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    model = ChatGoogleGenerativeAI(model=settings.gemini_model,
-        google_api_key=settings.gemini_api_key, temperature=0)
+    model = ChatGoogleGenerativeAI(
+        model=settings.gemini_model,
+        google_api_key=settings.gemini_api_key,
+        temperature=0,
+        timeout=20,
+    )
     response = model.invoke([("system", PATIENT_SYSTEM_PROMPT), ("human", document_text)])
     content = response.content if isinstance(response.content, str) else json.dumps(response.content)
     match = re.search(r"\{.*\}", content, re.DOTALL)
