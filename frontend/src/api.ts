@@ -8,6 +8,7 @@ import type {
   Metrics,
   ReviewPayload,
   RunEvent,
+  RunListItem,
   RunRecord,
   StartRunResponse,
 } from "./types";
@@ -75,9 +76,7 @@ export async function startRun(input: {
   return request<StartRunResponse>("/api/runs", { method: "POST", body: form });
 }
 
-export function listRuns(): Promise<
-  { run_id: string; case_id: string | null; status: string; created_at: string; updated_at: string }[]
-> {
+export function listRuns(): Promise<RunListItem[]> {
   return request("/api/runs");
 }
 

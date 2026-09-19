@@ -163,12 +163,17 @@ export default function Workspace() {
   const showDrawer = status === "awaiting_review";
   const isIngestFailed = status === "ingest_failed";
   const isFinalized = status === "finalized";
+  const showStartForm = !runId || isIngestFailed;
+  const sourceNote =
+    run?.extracted_text ||
+    (typeof run?.analysis?.extracted_text === "string" ? run.analysis.extracted_text : "") ||
+    "";
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Left column: inputs + timeline */}
       <div className="space-y-4">
-        {!runId && (
+        {showStartForm && (
           <section aria-label="New run inputs" className="rounded-md border border-slate-200 bg-white p-4">
             <h2 className="text-sm font-semibold text-slate-900">Start a run</h2>
             <p className="mt-1 text-xs text-slate-500">
@@ -246,6 +251,16 @@ export default function Workspace() {
                 </p>
               )}
             </div>
+          </section>
+        )}
+
+        {run && sourceNote && (
+          <section aria-label="Source note" className="rounded-md border border-slate-200 bg-white p-4">
+            <h2 className="text-sm font-semibold text-slate-900">Source note</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              {run.case_id || "uploaded note"} · {run.specialty || "routing…"} · {run.urgency || "…"} · {run.source || "upload"}
+            </p>
+            <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap text-xs text-slate-700">{sourceNote}</pre>
           </section>
         )}
 
@@ -332,8 +347,29 @@ export default function Workspace() {
 
         {run && run.lab_flags.length > 0 && (
           <section aria-label="Labs" className="rounded-md border border-slate-200 bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold text-slate-900">Labs</h2>
+            <h2 className="mb-3 text-sm font-semibold text-slate-900">Abnormal findings</h2>
             <LabTable labs={run.lab_flags} />
+            {run.safety_flags.length > 0 && (
+              <p className="mt-3 text-sm text-red-700">Safety: {run.safety_flags.join(", ")}</p>
+            )}
+          </section>
+        )}
+
+        {run && run.retrieved_docs.length > 0 && (
+          <section aria-label="Guidelines retrieved" className="rounded-md border border-slate-200 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold text-slate-900">Guidelines retrieved</h2>
+            <ul className="list-disc pl-5 text-sm text-slate-700">
+              {run.retrieved_docs.map((doc, index) => {
+                const title = typeof doc.title === "string" ? doc.title : "Guideline";
+                const topic = typeof doc.topic === "string" ? doc.topic : "";
+                return (
+                  <li key={`${title}-${index}`}>
+                    {title}
+                    {topic ? ` (${topic})` : ""}
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
 

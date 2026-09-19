@@ -44,7 +44,7 @@ export default function Layout() {
                 `rounded px-3 py-1.5 ${isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`
               }
             >
-              Library
+              Inbox
             </NavLink>
             <NavLink
               to="/observability"

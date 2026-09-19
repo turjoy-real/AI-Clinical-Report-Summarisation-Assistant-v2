@@ -9,6 +9,7 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HitlDrawer from "../components/HitlDrawer";
 import Disclaimer from "../components/Disclaimer";
+import Library from "../pages/Library";
 import Workspace from "../pages/Workspace";
 import type { RunRecord } from "../types";
 
@@ -17,6 +18,7 @@ vi.mock("../api", () => ({
   getCases: vi.fn().mockResolvedValue([]),
   getRun: vi.fn().mockResolvedValue(null),
   startRun: vi.fn(),
+  listRuns: vi.fn().mockResolvedValue([]),
   subscribeRunEvents: vi.fn().mockReturnValue(() => {}),
   sendChat: vi.fn(),
 }));
@@ -103,6 +105,20 @@ describe("Disclaimer", () => {
     render(<Disclaimer />);
     const banner = screen.getByTestId("disclaimer-banner");
     expect(banner).toHaveTextContent("Not for clinical use");
+  });
+});
+
+describe("Home inbox upload", () => {
+  it("shows a document upload field and disables Run assistant with empty input", () => {
+    render(
+      <MemoryRouter>
+        <Library />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId("home-file-input")).toBeInTheDocument();
+    expect(screen.getByTestId("upload-submit")).toBeDisabled();
+    expect(screen.getByLabelText("Document upload")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Paste a synthetic clinical note")).toBeInTheDocument();
   });
 });
 

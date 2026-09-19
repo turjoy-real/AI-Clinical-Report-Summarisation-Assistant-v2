@@ -67,12 +67,28 @@ export interface HumanDecision {
   decided_at?: string | null;
 }
 
+export interface RunListItem {
+  run_id: string;
+  case_id: string | null;
+  status: string;
+  urgency?: string | null;
+  specialty?: string | null;
+  source?: string;
+  created_at: string;
+  updated_at: string;
+  age_seconds?: number | null;
+}
+
 export interface RunRecord {
   run_id: string;
   case_id: string | null;
   status: RunStatus | string;
   disclaimer?: string;
   summary: string;
+  extracted_text?: string;
+  specialty?: string | null;
+  urgency?: string | null;
+  source?: string;
   recommendations: Recommendation[];
   lab_flags: LabFlag[];
   retrieved_docs: Record<string, unknown>[];
