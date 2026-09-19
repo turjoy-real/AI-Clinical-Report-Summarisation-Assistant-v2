@@ -1,6 +1,6 @@
 """RAG retrieve: embeddings + lexical ranking. Owned by Vamsi.
 
-Embeddings optional (requires OPENAI_API_KEY), lexical ranking always available.
+Embeddings optional (OpenAI first, then Gemini), lexical ranking always available.
 Hybrid scoring: blend vector distance with stopword-aware lexical overlap.
 """
 
@@ -54,6 +54,9 @@ _SPECIALTY_BOOSTS = {
     "general": [],
 }
 
+_COLLECTION_NAME = "educational_guidelines"
+_DEFAULT_OPENAI_EMBED_MODEL = "text-embedding-3-small"
+_DEFAULT_GEMINI_EMBED_MODEL = "models/text-embedding-004"
 _CHROMA_DIR = None  # Set on first call
 
 
@@ -83,40 +86,115 @@ def _get_client():
         return None
 
 
-def _get_embedding_function():
-    """Return an embedding function using OpenAI, or None if key is missing."""
+class _GeminiEmbeddingFunction:
+    """Chroma-compatible Gemini embedder using google.generativeai."""
+
+    def __init__(self, api_key: str, model_name: str = _DEFAULT_GEMINI_EMBED_MODEL):
+        self._api_key = api_key
+        self._model_name = (
+            model_name if model_name.startswith("models/") else f"models/{model_name}"
+        )
+
+    def name(self) -> str:
+        return "gemini"
+
+    def _embed_one(self, genai, text: str) -> list[float]:
+        result = genai.embed_content(
+            model=self._model_name,
+            content=text,
+            task_type="retrieval_document",
+            request_options={"timeout": 20},
+        )
+        return list(result["embedding"])
+
+    def __call__(self, input):
+        import google.generativeai as genai
+
+        texts = list(input)
+        if not texts:
+            return []
+        genai.configure(api_key=self._api_key)
+        try:
+            result = genai.embed_content(
+                model=self._model_name,
+                content=texts,
+                task_type="retrieval_document",
+                request_options={"timeout": 20},
+            )
+            embedding = result["embedding"]
+            if embedding and isinstance(embedding[0], (int, float)):
+                return [list(embedding)]
+            return [list(item) for item in embedding]
+        except Exception:
+            return [self._embed_one(genai, text) for text in texts]
+
+
+def _openai_embedding_function():
     try:
         from chromadb.utils import embedding_functions
+
         key = os.environ.get("OPENAI_API_KEY")
         if not key:
             return None
+        model = os.environ.get("OPENAI_EMBEDDING_MODEL") or _DEFAULT_OPENAI_EMBED_MODEL
         return embedding_functions.OpenAIEmbeddingFunction(
             api_key=key,
-            model_name="text-embedding-3-small"
+            model_name=model,
         )
     except Exception:
         return None
 
 
+def _gemini_embedding_function():
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        return None
+    model = os.environ.get("GEMINI_EMBEDDING_MODEL") or _DEFAULT_GEMINI_EMBED_MODEL
+    return _GeminiEmbeddingFunction(api_key=key, model_name=model)
+
+
+def _get_embedding_function():
+    """Return OpenAI embeddings, else Gemini, else None if no key is set."""
+    return _openai_embedding_function() or _gemini_embedding_function()
+
+
+def _upsert_collection(client, embed_fn, ids, texts, metadatas):
+    """Create or replace the guideline collection, recovering from dimension mismatch."""
+    try:
+        collection = client.get_or_create_collection(
+            name=_COLLECTION_NAME,
+            embedding_function=embed_fn,
+        )
+        collection.upsert(ids=ids, documents=texts, metadatas=metadatas)
+        return collection
+    except Exception:
+        try:
+            client.delete_collection(_COLLECTION_NAME)
+        except Exception:
+            pass
+        collection = client.get_or_create_collection(
+            name=_COLLECTION_NAME,
+            embedding_function=embed_fn,
+        )
+        collection.upsert(ids=ids, documents=texts, metadatas=metadatas)
+        return collection
+
+
 def embed_guidelines() -> int:
     """Embed all guideline chunks into Chroma. Returns count upserted.
 
-    If OPENAI_API_KEY is not set, returns 0 without error.
-    If Chroma is unavailable, returns 0 without error.
+    Uses OpenAI if OPENAI_API_KEY is set, otherwise Gemini if GEMINI_API_KEY is set.
+    Returns 0 without error when no key is set or Chroma is unavailable.
     """
     if not CHROMA_AVAILABLE:
         return 0
 
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
+    embed_fn = _get_embedding_function()
+    if not embed_fn:
         return 0
 
     client = _get_client()
     if not client:
-        return 0
-
-    embed_fn = _get_embedding_function()
-    if not embed_fn:
         return 0
 
     try:
@@ -124,12 +202,6 @@ def embed_guidelines() -> int:
         if not chunks:
             return 0
 
-        collection = client.get_or_create_collection(
-            name="educational_guidelines",
-            embedding_function=embed_fn,
-        )
-
-        # Upsert by id (idempotent)
         ids = [c.id for c in chunks]
         texts = [c.text for c in chunks]
         metadatas = [
@@ -141,8 +213,7 @@ def embed_guidelines() -> int:
             }
             for c in chunks
         ]
-
-        collection.upsert(ids=ids, documents=texts, metadatas=metadatas)
+        _upsert_collection(client, embed_fn, ids, texts, metadatas)
         return len(chunks)
     except Exception:
         return 0
@@ -198,25 +269,31 @@ def _apply_specialty_boost(chunk: GuidelineChunk, specialty: str | None) -> floa
     return 1.0
 
 
-def _vector_score(query: str, chunk: GuidelineChunk, collection) -> float | None:
-    """Query Chroma for vector distance, return normalized score or None."""
+def _vector_scores(query: str, collection) -> dict[str, float]:
+    """One Chroma query for the note, mapped to chunk-id similarity scores."""
     try:
+        n_results = max(1, len(list_guideline_chunks()))
         results = collection.query(
             query_texts=[query],
-            n_results=len(list_guideline_chunks()),
-            include=["distances"]
+            n_results=n_results,
+            include=["distances"],
         )
-
-        # Find this chunk in results
-        if results and results["ids"] and len(results["ids"]) > 0:
-            for i, rid in enumerate(results["ids"][0]):
-                if rid == chunk.id:
-                    # distances are cosine; convert to similarity (1 - distance)
-                    distance = results["distances"][0][i] if results["distances"] else 1.0
-                    return max(0.0, 1.0 - distance)
-        return None
+        scores: dict[str, float] = {}
+        if not results or not results.get("ids"):
+            return scores
+        ids = results["ids"][0]
+        distances = (results.get("distances") or [[]])[0]
+        for i, rid in enumerate(ids):
+            distance = distances[i] if i < len(distances) else 1.0
+            scores[rid] = max(0.0, 1.0 - distance)
+        return scores
     except Exception:
-        return None
+        return {}
+
+
+def _vector_score(query: str, chunk: GuidelineChunk, collection) -> float | None:
+    """Query Chroma for vector distance, return normalized score or None."""
+    return _vector_scores(query, collection).get(chunk.id)
 
 
 def retrieve_guidelines(
@@ -244,29 +321,33 @@ def retrieve_guidelines(
     if not chunks:
         return []
 
-    # Try to open Chroma collection for vector scores
+    # Try to open Chroma collection for vector scores (same embedder used at index time)
     collection = None
     if CHROMA_AVAILABLE:
         try:
             client = _get_client()
-            if client:
+            embed_fn = _get_embedding_function()
+            if client and embed_fn:
                 try:
-                    collection = client.get_collection(name="educational_guidelines")
+                    collection = client.get_collection(
+                        name=_COLLECTION_NAME,
+                        embedding_function=embed_fn,
+                    )
                 except Exception:
                     # Collection doesn't exist yet
                     pass
         except Exception:
             pass
 
+    vec_by_id = _vector_scores(query, collection) if collection else {}
+
     docs: list[RetrievedDoc] = []
     for chunk in chunks:
         # Lexical score (always)
         lex_score = _lexical_score(query, chunk)
 
-        # Vector score (if available)
-        vec_score = None
-        if collection:
-            vec_score = _vector_score(query, chunk, collection)
+        # Vector score (if available) — one query above, not one per chunk
+        vec_score = vec_by_id.get(chunk.id)
 
         # Combine: prefer vector if available, fall back to lexical
         if vec_score is not None:

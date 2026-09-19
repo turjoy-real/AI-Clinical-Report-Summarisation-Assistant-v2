@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-3.6-flash"
+    gemini_embedding_model: str = "models/text-embedding-004"
     enable_pubmed: bool = False
     enable_openfda: bool = False
     data_dir: Path = ROOT / "data"

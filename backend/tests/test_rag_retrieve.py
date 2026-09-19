@@ -14,6 +14,8 @@ from app.rag.retrieve import (
     _lexical_score,
     _apply_topic_boosts,
     _apply_specialty_boost,
+    _get_embedding_function,
+    _GeminiEmbeddingFunction,
 )
 from app.rag.ingest import ingest_guideline_corpus, list_guideline_chunks
 
@@ -95,15 +97,49 @@ def test_retrieve_with_specialty_boost():
 
 
 def test_embed_guidelines_no_key():
-    """embed_guidelines() returns 0 when OPENAI_API_KEY is not set."""
-    # Remove key if it exists
-    original = os.environ.pop("OPENAI_API_KEY", None)
+    """embed_guidelines() returns 0 when neither OpenAI nor Gemini key is set."""
+    original_openai = os.environ.pop("OPENAI_API_KEY", None)
+    original_gemini = os.environ.pop("GEMINI_API_KEY", None)
     try:
         result = embed_guidelines()
         assert result == 0
     finally:
-        if original:
-            os.environ["OPENAI_API_KEY"] = original
+        if original_openai:
+            os.environ["OPENAI_API_KEY"] = original_openai
+        if original_gemini:
+            os.environ["GEMINI_API_KEY"] = original_gemini
+
+
+def test_get_embedding_function_uses_gemini_without_openai(monkeypatch):
+    """Gemini embeddings are selected when only GEMINI_API_KEY is set."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", "test-gemini-key")
+    monkeypatch.setattr("app.rag.retrieve._openai_embedding_function", lambda: None)
+    fn = _get_embedding_function()
+    assert fn is not None
+
+
+def test_get_embedding_function_prefers_openai(monkeypatch):
+    """OpenAI embeddings win when both keys are present."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setenv("GEMINI_API_KEY", "test-gemini-key")
+    sentinel = object()
+    monkeypatch.setattr("app.rag.retrieve._openai_embedding_function", lambda: sentinel)
+    assert _get_embedding_function() is sentinel
+
+
+def test_gemini_embedding_function_embeds_texts(monkeypatch):
+    """Gemini embedder maps texts to vectors without a live API call."""
+    fake_genai = type("mod", (), {})()
+    fake_genai.configure = lambda **_kwargs: None
+    fake_genai.embed_content = lambda **_kwargs: {
+        "embedding": [[0.1, 0.2], [0.3, 0.4]]
+    }
+    monkeypatch.setitem(__import__("sys").modules, "google.generativeai", fake_genai)
+    fn = _GeminiEmbeddingFunction(api_key="test-key", model_name="text-embedding-004")
+    assert fn.name() == "gemini"
+    vectors = fn(["diabetes", "sepsis"])
+    assert vectors == [[0.1, 0.2], [0.3, 0.4]]
 
 
 def test_lexical_score_respects_stopwords():
@@ -189,11 +225,11 @@ def test_retrieve_sorted_by_score():
 
 
 @pytest.mark.skipif(
-    os.environ.get("OPENAI_API_KEY") is None,
-    reason="Skipped: OPENAI_API_KEY not set (Chroma vector tests require it)"
+    os.environ.get("OPENAI_API_KEY") is None and os.environ.get("GEMINI_API_KEY") is None,
+    reason="Skipped: no embedding API key set (Chroma vector tests require OpenAI or Gemini)"
 )
 def test_embed_guidelines_with_key():
-    """embed_guidelines() returns chunk count when OPENAI_API_KEY is set."""
+    """embed_guidelines() returns chunk count when an embedding key is set."""
     result = embed_guidelines()
     chunks = list_guideline_chunks()
     # Should return the number of chunks, or 0 if Chroma unavailable (no crash)
